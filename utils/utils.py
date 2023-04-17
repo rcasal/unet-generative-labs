@@ -72,7 +72,7 @@ def generate_dataset(num_samples,
         
         img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
         img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
-        print(img_a_name, img_b_name)
+
         cv2.imwrite(img_a_name,img_a)
         cv2.imwrite(img_b_name,img_b)
 
