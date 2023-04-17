@@ -36,7 +36,7 @@ def generate_dataset(num_samples,
 
     Args:
         num_samples (int): The number of samples to generate.
-        input_path (str): The path to the input folder containing train_A and train_B subfolders.
+        input_root_path (str): The path to the input folder containing train_A and train_B subfolders.
         output_path (str): The path to the output folder to save the generated samples to.
         parallelize (bool): Whether to parallelize the processing.
         rotate (bool): Whether to rotate images.
@@ -52,12 +52,15 @@ def generate_dataset(num_samples,
     output_input_path = os.path.join(output_path, "train_A")
     output_style_path = os.path.join(output_path, "train_B")
 
-    print(input_path)
-    # Create output directories if they don't exist
-    if not os.path.exists(output_path):
-        print(f'Creating directories in {output_path}')
-        os.makedirs(output_input_path)
-        os.makedirs(output_style_path)
+    # Check if the output directory already exists
+    if os.path.exists(output_path):
+        print(f"{output_path} already exists. Exiting.")
+        return
+
+    # Create output directories
+    print(f"Creating directories in {output_path}")
+    os.makedirs(output_input_path)
+    os.makedirs(output_style_path)
 
     # Get a list of all input files
     files_A = sorted(glob.glob(input_path), key=natural_keys)
