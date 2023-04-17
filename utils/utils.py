@@ -67,7 +67,7 @@ def generate_dataset(num_samples,
     # Zip the input and style files together
     files = list(zip(files_A, files_B))
 
-    def transform_and_save(files, index):
+    for index in tqdm(range(num_samples)):
         img_a,img_b = transform(files, rotate, translate, resolution)
         
         img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
@@ -75,17 +75,6 @@ def generate_dataset(num_samples,
         print(img_a_name, img_b_name)
         cv2.imwrite(img_a_name,img_a)
         cv2.imwrite(img_b_name,img_b)
-
-    # Generate samples by applying transform to each pair of input and style images
-    if parallelize:
-        num_cpus = mp.cpu_count()
-        pool = mp.Pool(processes=num_cpus)
-        pool.starmap(transform_and_save, [(files, i) for i in range(num_samples)])
-        pool.close()
-        pool.join()
-    else:
-        for i in tqdm(range(num_samples)):
-            transform_and_save(files[i % len(files)], i)
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
