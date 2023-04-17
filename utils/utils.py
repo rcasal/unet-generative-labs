@@ -8,6 +8,7 @@ from tqdm import tqdm
 import os 
 import multiprocessing as mp
 from multiprocessing import Pool, cpu_count
+import argparse
 
 def atoi(text):
     """Convert a string to integer if possible."""
@@ -22,7 +23,13 @@ def natural_keys(text):
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 
-def generate_dataset(num_samples, input_root_path='roto_face_large', output_path='roto', num_workers=None):
+def generate_dataset(num_samples, 
+                     input_root_path='roto_face_large', 
+                     output_path='roto', 
+                     num_workers=None, 
+                     rotate=False, 
+                     translate=False,
+                     resolution=512):
     """
     Generates a dataset of num_samples samples by selecting images from input_path/train_A and input_path/train_B, and
     saving them to output_path/train_A and output_path/train_B respectively.
@@ -60,7 +67,7 @@ def generate_dataset(num_samples, input_root_path='roto_face_large', output_path
     files = list(zip(files_A, files_B))
 
     def transform_and_save(index):
-        img_a,img_b = transform(files, index)
+        img_a,img_b = transform(files, rotate, translate, resolution)
 
         img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
         img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
@@ -154,3 +161,14 @@ def transform(files, rotate=False, translate=False, resolution=512):
     img_b = cv2.cvtColor(img_b,cv2.COLOR_BGR2RGB)
 
     return img_a, img_b
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
