@@ -138,8 +138,8 @@ def transform(files, rotate=False, translate=False, resolution=512):
 
         # Apply the affine transformation with 50% probability
         if rand_trans > 0.5:
-            img_a = F.affine(img_a, 0, [random_x_trans, random_y_trans], 1.0, 0, fillcolor=replace_val)
-            img_b = F.affine(img_b, 0, [random_x_trans, random_y_trans], 1.0, 0, fillcolor=replace_val)
+            img_a = F.affine(img_a, 0, [random_x_trans, random_y_trans], 1.0, 0, fill=replace_val)
+            img_b = F.affine(img_b, 0, [random_x_trans, random_y_trans], 1.0, 0, fill=replace_val)
 
     # Convert the images to NumPy arrays and convert from BGR to RGB
     img_a = np.array(img_a)
