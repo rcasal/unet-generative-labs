@@ -21,9 +21,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-
-    if args.num_workers == -10:
-        args.num_workers = None
         
     generate_dataset(
         num_samples=args.num_samples, 
