@@ -26,7 +26,7 @@ def natural_keys(text):
 def generate_dataset(num_samples, 
                      input_root_path='roto_face_large', 
                      output_path='roto', 
-                     num_workers=None, 
+                     parallelize=False, 
                      rotate=False, 
                      translate=False,
                      resolution=512):
@@ -77,16 +77,16 @@ def generate_dataset(num_samples,
         cv2.imwrite(img_b_name,img_b)
 
     # Generate samples by applying transform to each pair of input and style images
-    if num_workers is None:
-        for i in tqdm(range(num_samples)):
-            transform_and_save(i)
-    
-    else:
-        pool = mp.Pool(processes=num_workers)
+    if parallelize:
+        num_cpus = mp.cpu_count()
+        pool = mp.Pool(processes=num_cpus)
         pool.imap_unordered(transform_and_save, range(num_samples))
         pool.close()
         pool.join()
-
+    
+    else:
+        for i in tqdm(range(num_samples)):
+            transform_and_save(i)
 
     # Print the number of samples generated
     print(f'{b_cap} samples generated')

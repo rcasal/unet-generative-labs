@@ -13,11 +13,10 @@ def parse_args():
     parser.add_argument('--num_samples', type=int, default=10000, help='The number of samples to generate.')
     parser.add_argument('--input_root_path', type=str, default="roto_face_large", help='The path to the input folder containing train_A and train_B subfolders.')
     parser.add_argument('--output_path', type=str, default="roto", help='The path to the output folder to save the generated samples to')
-    parser.add_argument('--num_workers', type=int, default=-10, help='The number of cpu to use to parallelize the processing')
     parser.add_argument('--rotate', type=str2bool, nargs='?', const=True, default=False, help="Continue training allows to resume training. You'll need to add experiment name args to identify the experiment to recover.")
     parser.add_argument('--translate', type=str2bool, nargs='?', const=True, default=False, help="Continue training allows to resume training. You'll need to add experiment name args to identify the experiment to recover.")
     parser.add_argument('--resolution', type=int, default=512, help='The number of cpu to use to parallelize the processing')
-
+    parser.add_argument('--parallelize', type=str2bool, nargs='?', const=True, default=False, help="Parallelize the job across all the available cpus.")
     return parser.parse_args()
 
 def main():
@@ -30,7 +29,7 @@ def main():
         num_samples=args.num_samples, 
         input_root_path=args.input_root_path, 
         output_path=args.output_path, 
-        num_workers=args.num_workers,
+        parallelize=args.parallelize,
         rotate=args.rotate,
         translate=args.translate,
         resolution=args.resolution
