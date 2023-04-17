@@ -83,13 +83,14 @@ def generate_dataset(num_samples,
         pool.imap_unordered(transform_and_save, range(num_samples))
         pool.close()
         pool.join()
+        print('Parallelize generation finished.')
     
     else:
         for i in tqdm(range(num_samples)):
             transform_and_save(i)
 
     # Print the number of samples generated
-    print(f'{b_cap} samples generated')
+    print(f'{num_samples} samples generated')
 
 
 def transform(files, rotate=False, translate=False, resolution=512):
