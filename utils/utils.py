@@ -6,6 +6,7 @@ from PIL import Image
 import glob
 from tqdm import tqdm
 import os 
+import multiprocessing as mp
 from multiprocessing import Pool, cpu_count
 
 def atoi(text):
@@ -81,9 +82,6 @@ def generate_dataset(num_samples, input_root_path='roto_face_large', output_path
 
     # Print the number of samples generated
     print(f'{b_cap} samples generated')
-
-
-
 
 
 def transform(files, rotate=False, translate=False, resolution=512):
