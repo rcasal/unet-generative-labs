@@ -74,7 +74,7 @@ def generate_dataset(num_samples,
         # Parallel processing
         with mp.Pool(processes=mp.cpu_count()) as pool:
             tasks = [(index, files, rotate, translate, resolution, output_input_path, output_style_path) for index in range(num_samples)]
-            tqdm(pool.imap(generate_sample, tasks), total=num_samples)
+            results = list(tqdm(pool.imap(generate_sample, tasks), total=num_samples))
     else:
         # Serial processing
         for index in tqdm(range(num_samples)):
