@@ -69,10 +69,10 @@ def generate_dataset(num_samples,
 
     def transform_and_save(index):
         img_a,img_b = transform(files, rotate, translate, resolution)
-
+        
         img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
         img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
-
+        print(img_a_name, img_b_name)
         cv2.imwrite(img_a_name,img_a)
         cv2.imwrite(img_b_name,img_b)
 
@@ -83,7 +83,7 @@ def generate_dataset(num_samples,
         pool.imap_unordered(transform_and_save, range(num_samples))
         pool.close()
         pool.join()
-        print('Parallelize generation finished.')
+        print(f'Parallelize in {num_cpus} generation finished.')
     
     else:
         for i in tqdm(range(num_samples)):
