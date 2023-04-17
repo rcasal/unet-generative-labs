@@ -49,6 +49,7 @@ def generate_dataset(num_samples,
     output_input_path = os.path.join(output_path, "train_A")
     output_style_path = os.path.join(output_path, "train_B")
 
+    print(input_path)
     # Create output directories if they don't exist
     if not os.path.exists(output_path):
         print(f'Creating directories in {output_path}')
