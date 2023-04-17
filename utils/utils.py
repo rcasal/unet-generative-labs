@@ -23,24 +23,10 @@ def natural_keys(text):
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 
-import os
-import glob
-import cv2
-import multiprocessing as mp
-from tqdm import tqdm
-
-
-def natural_keys(text):
-    """
-    A natural sort key function for Python sort algorithms. This allows the files to be sorted in a natural way.
-    """
-    return [int(c) if c.isdigit() else c for c in re.split(r'(\d+)', text)]
-
-
 def generate_dataset(num_samples, 
                      input_root_path='roto_face_large', 
                      output_path='roto', 
-                     parallelize=True, 
+                     parallelize=False, 
                      rotate=False, 
                      translate=False,
                      resolution=512):
@@ -52,10 +38,10 @@ def generate_dataset(num_samples,
         num_samples (int): The number of samples to generate.
         input_path (str): The path to the input folder containing train_A and train_B subfolders.
         output_path (str): The path to the output folder to save the generated samples to.
-        parallelize (bool): Whether to parallelize the processing or not.
-        rotate (bool): Whether to apply random rotations to the images or not.
-        translate (bool): Whether to apply random translations to the images or not.
-        resolution (int): The resolution of the generated images.
+        parallelize (bool): Whether to parallelize the processing.
+        rotate (bool): Whether to rotate images.
+        translate (bool): Whether to translate images.
+        resolution (int): The resolution of the output images.
 
     Returns:
         None
@@ -85,23 +71,17 @@ def generate_dataset(num_samples,
     files = list(zip(files_A, files_B))
 
     if parallelize:
-        # Parallelize the processing across all available CPUs
-        pool = mp.Pool(processes=mp.cpu_count())
-        results = [pool.apply_async(transform, args=(f, rotate, translate, resolution)) for f in files]
-        images = [result.get() for result in tqdm(results)]
+        # Parallel processing
+        with mp.Pool(processes=mp.cpu_count()) as pool:
+            tasks = [(index, files, rotate, translate, resolution, output_input_path, output_style_path) for index in range(num_samples)]
+            tqdm(pool.imap(generate_sample, tasks), total=num_samples)
     else:
-        images = [transform(f, rotate, translate, resolution) for f in tqdm(files)]
-
-    for index, (img_a, img_b) in enumerate(tqdm(images[:num_samples])):
-        img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
-        img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
-
-        cv2.imwrite(img_a_name,img_a)
-        cv2.imwrite(img_b_name,img_b)
+        # Serial processing
+        for index in tqdm(range(num_samples)):
+            generate_sample((index, files, rotate, translate, resolution, output_input_path, output_style_path))
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
-
 
 
 def generate_sample(args):
