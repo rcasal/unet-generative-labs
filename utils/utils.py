@@ -80,17 +80,19 @@ def generate_dataset(num_samples,
     if parallelize:
         num_cpus = mp.cpu_count()
         pool = mp.Pool(processes=num_cpus)
-        pool.imap_unordered(transform_and_save, range(num_samples))
+        results = pool.imap_unordered(transform_and_save, range(num_samples))
         pool.close()
+        for _ in tqdm(results, total=num_samples):
+            pass
         pool.join()
         print(f'Parallelize in {num_cpus} generation finished.')
-    
     else:
         for i in tqdm(range(num_samples)):
             transform_and_save(i)
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
+
 
 
 def transform(files, rotate=False, translate=False, resolution=512):
