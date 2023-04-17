@@ -67,7 +67,7 @@ def generate_dataset(num_samples,
     # Zip the input and style files together
     files = list(zip(files_A, files_B))
 
-    def transform_and_save(index):
+    def transform_and_save(files, index):
         img_a,img_b = transform(files, rotate, translate, resolution)
         
         img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
@@ -80,19 +80,15 @@ def generate_dataset(num_samples,
     if parallelize:
         num_cpus = mp.cpu_count()
         pool = mp.Pool(processes=num_cpus)
-        results = pool.imap_unordered(transform_and_save, range(num_samples))
+        pool.starmap(transform_and_save, [(files, i) for i in range(num_samples)])
         pool.close()
-        for _ in tqdm(results, total=num_samples):
-            pass
         pool.join()
-        print(f'Parallelize in {num_cpus} generation finished.')
     else:
         for i in tqdm(range(num_samples)):
-            transform_and_save(i)
+            transform_and_save(files[i % len(files)], i)
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
-
 
 
 def transform(files, rotate=False, translate=False, resolution=512):
