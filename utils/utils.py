@@ -44,8 +44,8 @@ def generate_dataset(num_samples,
         None
     """
     # Define input and output paths
-    input_path = os.path.join(input_root_path, "/train_A","*")
-    style_path = os.path.join(input_root_path, "/train_B/","*")
+    input_path = os.path.join(input_root_path, "train_A","*")
+    style_path = os.path.join(input_root_path, "train_B/","*")
     output_input_path = os.path.join(output_path, "train_A")
     output_style_path = os.path.join(output_path, "train_B")
 

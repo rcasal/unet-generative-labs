@@ -26,8 +26,15 @@ def main():
     if args.num_workers == -10:
         args.num_workers = None
         
-    generate_dataset(args.num_samples, args.input_root_path, args.output_path, args.num_workers)
-
+    generate_dataset(
+        num_samples=args.num_samples, 
+        input_root_path=args.input_root_path, 
+        output_path=args.output_path, 
+        num_workers=args.num_workers,
+        rotate=args.rotate,
+        translate=args.translate,
+        resolution=args.resolution
+        )
 
 if __name__ == '__main__':
     main()
