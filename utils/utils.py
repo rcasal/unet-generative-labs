@@ -38,7 +38,10 @@ def generate_dataset(num_samples,
         num_samples (int): The number of samples to generate.
         input_path (str): The path to the input folder containing train_A and train_B subfolders.
         output_path (str): The path to the output folder to save the generated samples to.
-        num_workers (int): The number of cpu to use to parallelize the processing.
+        parallelize (bool): Whether to parallelize the processing.
+        rotate (bool): Whether to rotate images.
+        translate (bool): Whether to translate images.
+        resolution (int): The resolution of the output images.
 
     Returns:
         None
@@ -67,17 +70,29 @@ def generate_dataset(num_samples,
     # Zip the input and style files together
     files = list(zip(files_A, files_B))
 
-    for index in tqdm(range(num_samples)):
-        img_a,img_b = transform(files, rotate, translate, resolution)
-        
-        img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
-        img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
-
-        cv2.imwrite(img_a_name,img_a)
-        cv2.imwrite(img_b_name,img_b)
+    if parallelize:
+        # Parallel processing
+        with multiprocessing.Pool() as pool:
+            tasks = [(index, files, rotate, translate, resolution, output_input_path, output_style_path) for index in range(num_samples)]
+            results = list(tqdm(pool.imap(generate_sample, tasks), total=num_samples))
+    else:
+        # Serial processing
+        for index in tqdm(range(num_samples)):
+            generate_sample((index, files, rotate, translate, resolution, output_input_path, output_style_path))
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
+
+
+def generate_sample(args):
+    index, files, rotate, translate, resolution, output_input_path, output_style_path = args
+    img_a,img_b = transform(files, rotate, translate, resolution)
+
+    img_a_name = os.path.join(output_input_path,f'{index:04d}.jpg')
+    img_b_name = os.path.join(output_style_path,f'{index:04d}.jpg')
+
+    cv2.imwrite(img_a_name,img_a)
+    cv2.imwrite(img_b_name,img_b)
 
 
 def transform(files, rotate=False, translate=False, resolution=512):
