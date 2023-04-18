@@ -11,6 +11,7 @@ import time
 
 
 def train_unet(
+        args,
         root_dir = 'roto_latent', 
         num_epochs = 1000,
         batch_size = 4,
@@ -21,7 +22,7 @@ def train_unet(
         lambda_l1=0.01,
         is_latent=True,
         midas=True, 
-        lr=1e-3
+        lr=1e-3,
         ):
 
 
