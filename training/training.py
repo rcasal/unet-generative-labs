@@ -26,7 +26,7 @@ def train_unet(
 
 
     # dataloader
-    dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, suffle=True)
+    dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, shuffle=True)
 
     # models
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)
