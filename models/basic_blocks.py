@@ -264,7 +264,8 @@ class Up(nn.Module):
 
         self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
         self.conv = nn.Sequential(
-            DoubleConv(in_channels + out_channels, out_channels, in_channels // 2),
+            DoubleConv(in_channels, in_channels, residual=True),
+            DoubleConv(in_channels, out_channels, in_channels // 2),
         )
 
         self.emb_layer = nn.Sequential(
@@ -287,3 +288,6 @@ class Up(nn.Module):
         x = self.up(x)
         x = torch.cat([skip_x, x], dim=1)
         x = self.conv(x)
+        #emb = self.emb_layer(t)[:, :, None, None].repeat(1, 1, x.shape[-2], x.shape[-1])
+        #return x + emb
+        return x

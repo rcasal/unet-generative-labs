@@ -1,166 +1,76 @@
 import torch
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
+from torch.utils.data import Dataset , DataLoader
+from torchvision.transforms import Resize
+import torchvision.transforms as T
 from PIL import Image
 import os
-import numpy as np
-from utils.utils import is_distributed
-from pathlib import Path
 
-def create_loaders(train_dir, target_width, batch_size, n_classes, world_size, rank):
-    
-    dataset = SwordSorceryDataset(train_dir, target_width=target_width, n_classes=n_classes)
+def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, shuffle=True):
+    """
+    Returns a dataloader and the number of input channels for the given root directory.
 
-    sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, drop_last=False) if is_distributed() else None
+    Args:
+        root_dir (str): path to the root directory of the dataset.
+        batch_size (int): batch size for the dataloader.
+        is_latent (bool): True if the input data is in latent space, False otherwise. Default is True.
+        midas (bool): True if the input data includes depth maps from MiDaS, False otherwise. Default is True.
+        shuffle (bool): True to shuffle the dataset, False otherwise. Default is True.
 
-    loader = DataLoader(dataset, batch_size=batch_size,
-                                  collate_fn=SwordSorceryDataset.collate_fn,
-                                  num_workers=0, 
-                                  shuffle=(sampler is None),
-                                  pin_memory=True,
-                                  sampler=sampler)
-   
-    return loader 
-
-
-def scale_width(img, target_width, method):
-    '''
-    Function that scales an image to target_width while retaining aspect ratio.
-    '''
-    w, h = img.size
-    if w == target_width: return img
-    target_height = target_width * h // w
-    return img.resize((target_width, target_height), method)
+    Returns:
+        A tuple containing the dataloader and the number of input channels and the len of the dataset.
+    """
+    dataset = CustomDataset(root_dir, is_latent=is_latent, midas=midas)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0, shuffle=shuffle)
+    i, _ = dataset[1]
+    ch_in = i.shape[0]
+    len_ds = len(dataset)
+    return dataloader, ch_in, len_ds
 
 
-class SwordSorceryDataset(torch.utils.data.Dataset):
-    '''
-    SwordSorceryDataset Class
-    Values:
-        paths: (a list of) paths to load examples from, a list or string
-        target_width: the size of image widths for resizing, a scalar
-        n_classes: the number of object classes, a scalar
-    '''
 
-    def __init__(self, paths, target_width=1024, n_classes=2):
-        super().__init__()
+class CustomDataset(Dataset):
+    """Custom dataset class for loading image data"""
 
-        self.n_classes = n_classes
-        self.paths = paths
-        self.paths['path_inputs'] = {key: val for key, val in self.paths['path_inputs'].items() if os.path.isdir(os.path.join(self.paths['path_root'], val))}
-        self.n_inputs = len(self.paths['path_inputs'])
-
-
-        # Collect list of examples
-        self.examples = {}
-        self.load_examples_from_dir()
-        self.examples = list(self.examples.values())
-        self.examples=[example for example in self.examples if len(example)==self.n_inputs]
-        assert all(len(example) == self.n_inputs for example in self.examples)
-
-        # Initialize transforms for the real color image
-        self.img_transforms = transforms.Compose([
-            transforms.Lambda(lambda img: scale_width(img, target_width, Image.BICUBIC)),
-            transforms.Lambda(lambda img: np.array(img)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ])
-
-        # Initialize transforms for semantic label and instance maps
-        self.map_transforms = transforms.Compose([
-            transforms.Lambda(lambda img: scale_width(img, target_width, Image.NEAREST)),
-            transforms.Lambda(lambda img: np.array(img)),
-            transforms.ToTensor(),
-        ])
-         
-
-    def load_examples_from_dir(self):
-        '''
-        Given a folder of examples, this function returns a list of paired examples.
-        '''
-        for attr, path_input  in self.paths['path_inputs'].items():
-            abs_path = os.path.join(self.paths['path_root'], path_input)
-            assert os.path.isdir(abs_path)
-            for root, _, files in os.walk(abs_path):
-                for f in files:
-                    if f.split('.')[1] in ('jpg', 'jpeg', 'png'):
-                        file_name = f.split('.')[0] # keep name, remove .jpg or .png
-
-                        if file_name not in self.examples.keys():
-                            self.examples[file_name] = {}
-                        self.examples[file_name][attr] = root + '/' + f
-    
-    def __getitem__(self, idx):
-        example = self.examples[idx]
-        file_name = os.path.splitext(os.path.basename(example['input_img']))[0]
-        # Load input and output images
-        img_i = Image.open(example['input_img']).convert('RGB')  # color image: (3, 512, 1024)
-        try:
-            img_o = Image.open(example['output_img']).convert('RGB')  # color image: (3, 512, 1024)
-        except:
-            img_o = Image.open(example['input_img']).convert('RGB')  # if there is no output_img, it works as autoencoder (or in sample)
-
-        # Apply corresponding transforms
-        img_i = self.img_transforms(img_i)
-        img_o = self.img_transforms(img_o)
-
-        # Load optional inst images
-        if 'inst_map' in self.paths['path_inputs'].keys():
-            inst = Image.open(example['inst_map']).convert('L')   # instance map: (512, 1024)
-            inst = self.map_transforms(inst)
-
-            # Convert instance map to instance boundary map
-            bound = torch.ByteTensor(inst.shape).zero_()
-            bound[:, :, 1:] = bound[:, :, 1:] | (inst[:, :, 1:] != inst[:, :, :-1])
-            bound[:, :, :-1] = bound[:, :, :-1] | (inst[:, :, 1:] != inst[:, :, :-1])
-            bound[:, 1:, :] = bound[:, 1:, :] | (inst[:, 1:, :] != inst[:, :-1, :])
-            bound[:, :-1, :] = bound[:, :-1, :] | (inst[:, 1:, :] != inst[:, :-1, :])
-            bound = bound.to(img_i.dtype)
-        else:   
-            inst = torch.zeros(0, img_i.shape[1], img_i.shape[2])
-            bound = torch.zeros(0, img_i.shape[1], img_i.shape[2])
-
-        # Load optional label images
-        if 'label_map' in self.paths['path_inputs'].keys():
-            label = Image.open(example['label_map']).convert('L') # semantic label map: (512, 1024)
-            label = self.map_transforms(label)#.long() * 255 # --> check this!
-
-            # Convert labels to one-hot vectors
-            #label = torch.zeros(self.n_classes, img.shape[1], img.shape[2]).scatter_(0, label, 1.0).to(img.dtype)
-        else:   
-            label = torch.zeros(0, img_i.shape[1], img_i.shape[2])
- 
-        return (img_i, label, inst, bound, img_o, file_name)
+    def __init__(self, root_dir='roto_latent', is_latent=False, midas=False):
+        """
+        Args:
+            root_dir (str): Root directory of the dataset.
+            is_latent (bool): If True, load latent space data. Otherwise, load images.
+            midas (bool): If True and is_latent is True, concatenate the latent space data
+                          with the corresponding Midas data.
+        """
+        self.root_dir = root_dir
+        self.image_paths = sorted(os.listdir(os.path.join(self.root_dir, "train_A")))
+        self.is_latent = is_latent
+        self.midas = midas
 
     def __len__(self):
-        return len(self.examples)
+        """Return the length of the dataset"""
+        return len(self.image_paths)
 
-    @staticmethod
-    def collate_fn(batch):
-        imgs_i, labels, insts, bounds, imgs_o, file_name = [], [], [], [], [], []
-        for (x, l, i, b, o, f) in batch:
-            imgs_i.append(x)
-            labels.append(l)
-            insts.append(i)
-            bounds.append(b)
-            imgs_o.append(o)
-            file_name.append(f)
-        return (
-            torch.stack(imgs_i, dim=0),
-            torch.stack(labels, dim=0),
-            torch.stack(insts, dim=0),
-            torch.stack(bounds, dim=0),
-            torch.stack(imgs_o, dim=0),
-            file_name#torch.stack(file_name, dim=0)
-        )
+    def __getitem__(self, idx):
+        """Return the input and target data for the given index"""
 
-    def get_input_size_g(self):
-        img_i, label, inst, bound, img_o, _ = self.__getitem__(1)
-        return img_i.shape[0] + label.shape[0] + bound.shape[0]
+        image_path = self.image_paths[idx]
+        
+        if self.is_latent:
+            # Load the latent space data
+            input = torch.load(os.path.join(self.root_dir, "train_A", image_path)).squeeze()
+            target = torch.load(os.path.join(self.root_dir, "train_B", image_path)).squeeze()
 
-    def get_input_size_d(self):
-        img_i, label, inst, bound, img_o, _ = self.__getitem__(1)
-        return bound.shape[0] + label.shape[0] + img_o.shape[0]
- 
-    # it's remaining input_size_encoder because we're not using that for now
+            if self.midas:
+                # Concatenate the latent space data with the corresponding Midas data
+                midas = torch.load(os.path.join(self.root_dir, "midas_A", image_path)).squeeze()
+                input = torch.cat([input, midas], dim=0)
+        else:
+            # Load the images and preprocess them
+            input = Image.open(os.path.join(self.root_dir, "train_A", image_path))
+            target = Image.open(os.path.join(self.root_dir, "train_B", image_path))
+            input = Resize((512, 512))(input)
+            target = Resize((512, 512))(target)
+            input = T.ToTensor()(input)* 2.0 - 1.0
+            target = T.ToTensor()(target)* 2.0 - 1.0
+
+        return input, target
+
+
