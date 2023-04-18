@@ -60,7 +60,6 @@ def generate_dataset(num_samples,
     output_style_path = os.path.join(output_path, "train_B")
     output_midas_path = os.path.join(output_path, "midas_A")
 
-
     # Check if output folder already exists
     if os.path.exists(output_path):
         if remove_if_exist:
@@ -68,7 +67,6 @@ def generate_dataset(num_samples,
             shutil.rmtree(output_path)
         else:
             raise ValueError(f'Output folder {output_path} already exists')
-
 
     # Create output directories
     print(f"Creating directories in {output_path}")
