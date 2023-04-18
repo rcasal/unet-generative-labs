@@ -19,8 +19,8 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
     """
 
     # Define input and output paths
-    input_path = os.path.join(input_root_path, "train_A", "*")
-    style_path = os.path.join(input_root_path, "train_B", "*")
+    input_path = os.path.join(input_root_path, "train_A")
+    style_path = os.path.join(input_root_path, "train_B")
     output_A_path = os.path.join(output_path, "train_A")
     output_B_path = os.path.join(output_path, "train_B")
 
