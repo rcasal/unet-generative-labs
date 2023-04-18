@@ -23,6 +23,7 @@ def main():
         input_root_path=args.input_root_path, 
         output_path=args.output_path, 
         resolution=args.resolution, 
+        midas=args.midas, 
         remove_if_exist=args.remove_if_exist
         )
 
