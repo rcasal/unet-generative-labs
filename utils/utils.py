@@ -320,7 +320,7 @@ def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path)
     dtarget_pil = convert_pytorch_to_pil(decoded_target[0])
 
     # Plot all images
-    fig, axs = plt.subplots(1, 5, figsize=(10, 2))
+    fig, axs = plt.subplots(1, 5, figsize=(10, 3))
     axs[0].imshow(dinput_pil)
     axs[1].imshow(output_pil)
     axs[2].imshow(target_pil)
