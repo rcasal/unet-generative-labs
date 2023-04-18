@@ -30,7 +30,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
     midas_path = os.path.join(input_root_path, "midas_A")
     style_path = os.path.join(input_root_path, "train_B")
     output_A_path = os.path.join(output_path, "train_A")
-    output_midas_path = os.path.join(input_root_path, "midas_A") if midas else None
+    output_midas_path = os.path.join(output_path, "midas_A") if midas else None
     output_B_path = os.path.join(output_path, "train_B")
 
     # Define the encoder model
