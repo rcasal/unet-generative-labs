@@ -84,7 +84,7 @@ def train_unet(
             optimizer.step()
 
             # Update the running loss
-            if perceptual_loss.item() != float('inf') and loss.item() != float('inf') and mse_loss.item() != float('inf') and f1_loss.item() != float('inf'):
+            if perceptual_loss.item() != float('inf') and loss.item() != float('inf') and mse_loss.item() != float('inf') and l1_loss.item() != float('inf'):
                 running_loss += loss.item() * output_batch.size(0)
                 running_mse_loss += mse_loss.item() * output_batch.size(0)
                 running_l1_loss += l1_loss.item() * output_batch.size(0)
@@ -96,7 +96,7 @@ def train_unet(
             if debug_verbose:
                 if cur_step % 20 == 0 and cur_step > 0:
                     print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
-                    print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), f1_loss.item()))
+                    print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), l1_loss.item()))
 
 
         time_elapsed = time.time() - since
@@ -105,7 +105,7 @@ def train_unet(
         epoch_mse_loss = running_mse_loss / len_ds
         epoch_l1_loss = running_l1_loss / len_ds
         epoch_perceptual_loss = running_perceptual_loss / len_ds
-        print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, F1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_f1_loss, epoch_perceptual_loss, time_elapsed))
+        print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_l1_loss, epoch_perceptual_loss, time_elapsed))
         print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
 
         # Loss for TensorBoard 
