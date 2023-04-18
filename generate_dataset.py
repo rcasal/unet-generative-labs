@@ -14,7 +14,8 @@ def parse_args():
     parser.add_argument('--translate', type=str2bool, nargs='?', const=True, default=False, help="Continue training allows to resume training. You'll need to add experiment name args to identify the experiment to recover.")
     parser.add_argument('--resolution', type=int, default=512, help='The number of cpu to use to parallelize the processing')
     parser.add_argument('--parallelize', type=str2bool, nargs='?', const=True, default=False, help="Parallelize the job across all the available cpus.")
-    parser.add_argument('--remove_if_exist', type=str2bool, nargs='?', const=True, default=False, help="Parallelize the job across all the available cpus.")
+    parser.add_argument('--midas', type=str2bool, nargs='?', const=True, default=False, help="process the train_A images using MiDaS in order to generate a side latents.")
+    parser.add_argument('--remove_if_exist', type=str2bool, nargs='?', const=True, default=False, help="Remove output folder if exists.")
 
     return parser.parse_args()
 
@@ -29,6 +30,7 @@ def main():
         rotate=args.rotate,
         translate=args.translate,
         resolution=args.resolution,
+        midas=args.midas,
         remove_if_exist=args.remove_if_exist
         )
 
