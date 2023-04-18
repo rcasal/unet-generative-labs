@@ -26,6 +26,9 @@ def train_unet(
         lr=1e-3,
         ):
 
+    # output paths
+    args.saved_images_path = os.path.join(args.output_path_dir, args.saved_images_path)
+    args.saved_model_path = os.path.join(args.output_path_dir, args.saved_model_path)
 
     # dataloader
     dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, shuffle=True)
