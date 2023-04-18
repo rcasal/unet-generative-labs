@@ -1,9 +1,6 @@
 import argparse
-import os
-import warnings
 from utils.utils import generate_dataset, str2bool
 
-#generate_dataset(num_samples, input_root_path='roto_face_large', output_path='roto', num_workers=None)
 def parse_args():
     desc = "Pix2PixHD"
 

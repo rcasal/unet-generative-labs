@@ -172,7 +172,6 @@ def transform(files, rotate=False, translate=False, resolution=512):
     img_a = np.array(img_a)
     img_a = cv2.cvtColor(img_a, cv2.COLOR_BGR2RGB)
 
-    
     img_b = np.array(img_b)
     img_b = cv2.cvtColor(img_b,cv2.COLOR_BGR2RGB)
 
