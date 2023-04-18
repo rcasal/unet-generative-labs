@@ -19,10 +19,10 @@ def main():
     args = parse_args()
         
     generate_latents(
-        input_root_path='roto', 
-        output_path='roto_latent', 
-        resolution=512, 
-        remove_if_exist=False
+        input_root_path=args.input_root_path, 
+        output_path=args.output_path, 
+        resolution=args.resolution, 
+        remove_if_exist=args.remove_if_exist
         )
 
 if __name__ == '__main__':
