@@ -284,7 +284,7 @@ def weights_init(m):
         nn.init.xavier_normal_(m.weight)
 
 
-def print_image(output_batch, target_batch, input_batch, vae, loss):
+def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path):
     """
     Displays a comparison of input, output, and target images from a VAE, along with their decoded versions.
     
@@ -342,6 +342,10 @@ def print_image(output_batch, target_batch, input_batch, vae, loss):
     fig.suptitle(f'Loss: {loss:.2f}', fontsize=12, fontweight='bold', y=0.05, fontdict={'verticalalignment': 'bottom'})
     plt.tight_layout()
     
-    # Display plot
-    plt.show()
-    plt.pause(0.001)
+    # Save fig
+    output_path = os.path.join(path,f"epoch_{epoch:04d}.jpg")
+    fig.savefig(output_path)
+
+    # Display plot ! No Anda en colab
+    # plt.show()
+    # plt.pause(0.001)

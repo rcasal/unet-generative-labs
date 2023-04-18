@@ -7,8 +7,9 @@ from diffusers import AutoencoderKL
 import torch 
 import torch.optim as optim
 import time
-#from torch.utils.tensorboard import SummaryWriter
-
+import os
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 def train_unet(
         args,
@@ -40,16 +41,32 @@ def train_unet(
     optimizer = optim.Adadelta(unet.parameters(), lr=lr)
     loss_fn = UNetLoss(lambda_mse=lambda_mse, lambda_perceptual=lambda_perceptual, lambda_l1=lambda_l1).half()
 
+    # Tensorboard
+    args.writer = SummaryWriter(
+        log_dir=os.path.join(args.output_path_dir, args.saved_history_path),
+        filename_suffix=args.experiment_name
+        )
+    
+    # recover from checkpoint
+    path_bkp_model = os.path.join(args.saved_model_path, 'bkp_model.pth')
+    epoch_run=0
+    if(args.resume_training and os.path.exists(path_bkp_model)):
+        cp = torch.load(path_bkp_model)
+        epoch_run = cp['epoch']
+        unet.load_state_dict(cp['unet_state_dict'])
+        #best_model_wts = cp['best_model_wts']
+        optimizer.load_state_dict(cp['optimizer_state_dict'])        
+        print('Resuming script in epoch {}.'.format(epoch_run))   
+
     # Training loop
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs-epoch_run)):
         # time
         since = time.time()
         unet.train()
         running_loss = 0.0
         running_mse_loss = 0.0
-        running_f1_loss = 0.0
+        running_l1_loss = 0.0
         running_perceptual_loss = 0.0    
-        cur_step = 0
         for input_batch, target_batch in dataloader:
             
             input_batch = input_batch.to(device="cuda", dtype=torch.float16) 
@@ -59,7 +76,7 @@ def train_unet(
             output_batch=unet(input_batch)
             
             # Compute the loss
-            loss, mse_loss, perceptual_loss, f1_loss = loss_fn(output_batch, target_batch)
+            loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, target_batch)
             
             # Backward pass and optimization
             optimizer.zero_grad()
@@ -70,7 +87,7 @@ def train_unet(
             if perceptual_loss.item() != float('inf') and loss.item() != float('inf') and mse_loss.item() != float('inf') and f1_loss.item() != float('inf'):
                 running_loss += loss.item() * output_batch.size(0)
                 running_mse_loss += mse_loss.item() * output_batch.size(0)
-                running_f1_loss += f1_loss.item() * output_batch.size(0)
+                running_l1_loss += l1_loss.item() * output_batch.size(0)
                 running_perceptual_loss += perceptual_loss.item() * output_batch.size(0)
 
             cur_step+=1
@@ -78,17 +95,32 @@ def train_unet(
             # Print after debug steps
             if debug_verbose:
                 if cur_step % 20 == 0 and cur_step > 0:
-                    print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss)
-                    print('Loss: {:.4f}, MSE Loss: {:.4f}, F1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), f1_loss.item()))
+                    print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
+                    print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), f1_loss.item()))
 
 
         time_elapsed = time.time() - since
         # Compute the epoch loss and print it
         epoch_loss = running_loss / len_ds
         epoch_mse_loss = running_mse_loss / len_ds
-        epoch_f1_loss = running_f1_loss / len_ds
+        epoch_l1_loss = running_l1_loss / len_ds
         epoch_perceptual_loss = running_perceptual_loss / len_ds
         print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, F1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_f1_loss, epoch_perceptual_loss, time_elapsed))
-        print_image(output_batch,target_batch, input_batch[:, 0:4, :, :], vae, epoch_loss)
+        print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
+
+        # Loss for TensorBoard 
+        args.writer.add_scalar(f'Loss', epoch_loss, epoch)
+        args.writer.add_scalar(f'MSE Loss', epoch_mse_loss, epoch)
+        args.writer.add_scalar(f'L1 Loss', epoch_l1_loss, epoch)
+        args.writer.add_scalar(f'Perceptual Loss', epoch_perceptual_loss, epoch)
+
+        # Save checkpoint
+        if args.saved_model_path is not None:
+            torch.save({
+                'epoch': epoch + epoch_run + 1,
+                'unet_state_dict': unet.state_dict(),
+                # Best models states
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, path_bkp_model)
 
     return unet
