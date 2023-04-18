@@ -45,11 +45,17 @@ def train_unet(
     loss_fn = UNetLoss(lambda_mse=lambda_mse, lambda_perceptual=lambda_perceptual, lambda_l1=lambda_l1).half()
 
     # Tensorboard
+    layout = {
+        "ABCDE": {
+            "loss": ["Multiline", ["loss/loss", "loss/mse", "loss/f1", "loss/perceptual"]],
+        },
+    }
     args.writer = SummaryWriter(
         log_dir=os.path.join(args.output_path_dir, args.saved_history_path),
         filename_suffix=args.experiment_name
         )
-    
+    args.writer.add_custom_scalars(layout)
+
     # recover from checkpoint
     path_bkp_model = os.path.join(args.saved_model_path, 'bkp_model.pth')
     epoch_run=0
@@ -114,10 +120,10 @@ def train_unet(
         print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
 
         # Loss for TensorBoard 
-        args.writer.add_scalar(f'Loss', epoch_loss, epoch)
-        args.writer.add_scalar(f'MSE Loss', epoch_mse_loss, epoch)
-        args.writer.add_scalar(f'L1 Loss', epoch_l1_loss, epoch)
-        args.writer.add_scalar(f'Perceptual Loss', epoch_perceptual_loss, epoch)
+        args.writer.add_scalar(f'loss/loss', epoch_loss, epoch)
+        args.writer.add_scalar(f'loss/mse', lambda_mse*epoch_mse_loss, epoch)
+        args.writer.add_scalar(f'loss/f1', lambda_l1*epoch_l1_loss, epoch)
+        args.writer.add_scalar(f'loss/perceptual', lambda_perceptual*epoch_perceptual_loss, epoch)
 
         # Save checkpoint
         if args.saved_model_path is not None:
@@ -128,4 +134,3 @@ def train_unet(
                 'optimizer_state_dict': optimizer.state_dict(),
             }, path_bkp_model)
 
-    return unet

@@ -55,7 +55,7 @@ def main():
         os.makedirs(os.path.join(args.output_path_dir, args.saved_model_path))
 
     # train the model
-    unet = train_unet(
+    train_unet(
         args = args,
         root_dir = args.root_dir, 
         num_epochs = args.num_epochs,
