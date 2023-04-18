@@ -9,7 +9,7 @@ import torch.optim as optim
 import time
 import os
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
+from tqdm.auto  import tqdm
 
 def train_unet(
         args,
@@ -104,13 +104,13 @@ def train_unet(
                     print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), l1_loss.item()))
 
 
-        time_elapsed = time.time() - since
         # Compute the epoch loss and print it
         epoch_loss = running_loss / len_ds
         epoch_mse_loss = running_mse_loss / len_ds
         epoch_l1_loss = running_l1_loss / len_ds
         epoch_perceptual_loss = running_perceptual_loss / len_ds
-        print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_l1_loss, epoch_perceptual_loss, time_elapsed))
+        # time_elapsed = time.time() - since
+        # print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_l1_loss, epoch_perceptual_loss, time_elapsed))
         print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
 
         # Loss for TensorBoard 
