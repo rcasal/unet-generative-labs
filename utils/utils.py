@@ -344,3 +344,4 @@ def print_image(output_batch, target_batch, input_batch, vae, loss):
     
     # Display plot
     plt.show()
+    plt.pause(0.001)
