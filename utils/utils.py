@@ -10,6 +10,7 @@ import multiprocessing as mp
 from multiprocessing import Pool, cpu_count
 import argparse
 import shutil
+import torch 
 
 def atoi(text):
     """Convert a string to integer if possible."""
@@ -31,6 +32,7 @@ def generate_dataset(num_samples,
                      rotate=False, 
                      translate=False,
                      resolution=512,
+                     midas=False,
                      remove_if_exist=False):
     """
     Generates a dataset of num_samples samples by selecting images from input_path/train_A and input_path/train_B, and
@@ -44,6 +46,7 @@ def generate_dataset(num_samples,
         rotate (bool): Whether to rotate images.
         translate (bool): Whether to translate images.
         resolution (int): The resolution of the output images.
+        midas (bool): if True, process the train_A images using MiDaS in order to generate a side latents.
         remove_folder_if_exists (bool): Whether to remove the output folder if it already exists.
 
 
@@ -55,6 +58,8 @@ def generate_dataset(num_samples,
     style_path = os.path.join(input_root_path, "train_B/","*")
     output_input_path = os.path.join(output_path, "train_A")
     output_style_path = os.path.join(output_path, "train_B")
+    output_midas_path = os.path.join(output_path, "midas_A")
+
 
     # Check if output folder already exists
     if os.path.exists(output_path):
@@ -69,6 +74,7 @@ def generate_dataset(num_samples,
     print(f"Creating directories in {output_path}")
     os.makedirs(output_input_path)
     os.makedirs(output_style_path)
+    os.makedirs(output_midas_path) if midas else None
 
     # Get a list of all input files
     files_A = sorted(glob.glob(input_path), key=natural_keys)
@@ -94,6 +100,10 @@ def generate_dataset(num_samples,
 
     # Print the number of samples generated
     print(f'{num_samples} samples generated')
+    
+    # midas code
+    print(f'Generating midas samples')
+    generate_midas(input_path=output_input_path, output_path=output_midas_path)
 
 
 def generate_sample(args):
@@ -187,3 +197,51 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+
+def generate_midas(input_path='roto/train_A/', output_path='roto/midas_A/'):
+    
+    #Load a model (see https://github.com/intel-isl/MiDaS/#Accuracy for an overview)
+    model_type = "DPT_Large"     # MiDaS v3 - Large     (highest accuracy, slowest inference speed)
+    #model_type = "DPT_Hybrid"   # MiDaS v3 - Hybrid    (medium accuracy, medium inference speed)
+    #model_type = "MiDaS_small"  # MiDaS v2.1 - Small   (lowest accuracy, highest inference speed)
+    midas = torch.hub.load("intel-isl/MiDaS", model_type)
+
+    #Move model to GPU if available
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    midas.to(device)
+    midas.eval()
+
+    #Load transforms to resize and normalize the image for large or small model
+    midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
+
+    if model_type == "DPT_Large" or model_type == "DPT_Hybrid":
+        transform = midas_transforms.dpt_transform
+    else:
+        transform = midas_transforms.small_transform
+
+    # Loop through the images in train_A
+    for filename in tqdm(os.listdir(input_path)):
+        # Load the image
+        img = cv2.imread(os.path.join(input_path, filename))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        input_batch = transform(img).to(device)
+
+        # Pass the image through the encoder
+        #Predict and resize to original resolution
+        with torch.no_grad():
+            prediction = midas(input_batch)
+
+            prediction = torch.nn.functional.interpolate(
+                prediction.unsqueeze(1),
+                size=img.shape[:2],
+                mode="bicubic",
+                align_corners=False,
+            ).squeeze()
+
+        output = prediction.cpu().numpy()
+        # Save the image
+        img_name = os.path.join(output_path,filename)
+        cv2.imwrite(img_name,output)

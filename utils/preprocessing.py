@@ -5,17 +5,23 @@ import torchvision.transforms as T
 from PIL import Image
 from tqdm import tqdm
 from diffusers import AutoencoderKL
-
+import cv2
+import torch
+from tqdm import tqdm
+import os
 
 def generate_latents(input_root_path='roto', output_path='roto_latent', resolution=512, remove_if_exist=False):
     """
     Generate latent codes for images using a VAE model and save them as PyTorch tensors.
 
-    :param input_root_path: str, root directory containing the input images in two subdirectories 'train_A' and 'train_B'
-    :param output_path: str, directory to save the generated latent codes in two subdirectories 'train_A' and 'train_B'
-    :param resolution: int, size of the images after resizing
-    :param remove_if_exist: bool, if True, remove the output directory if it already exists, otherwise raise an error
-    :return: None
+     Args:
+        input_root_path (str): root directory containing the input images in two subdirectories 'train_A' and 'train_B'
+        output_path (str): directory to save the generated latent codes in two subdirectories 'train_A' and 'train_B'
+        resolution (int): size of the images after resizing
+        remove_if_exist (bool): if True, remove the output directory if it already exists, otherwise raise an error
+
+    Returns:
+        None
     """
 
     # Define input and output paths
@@ -70,3 +76,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
             latents = vae.encode(img).latent_dist.sample() * 0.18215
         # Save the encoded image as a PyTorch tensor
         torch.save(latents, os.path.join(output_B_path, filename[:-4] + '.pt'))
+
+
+
+
