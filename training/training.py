@@ -46,7 +46,7 @@ def train_unet(
 
     # Tensorboard
     layout = {
-        "ABCDE": {
+        "Loss function": {
             "loss": ["Multiline", ["loss/loss", "loss/mse", "loss/f1", "loss/perceptual"]],
         },
     }
