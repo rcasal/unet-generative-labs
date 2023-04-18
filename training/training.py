@@ -66,7 +66,9 @@ def train_unet(
         running_loss = 0.0
         running_mse_loss = 0.0
         running_l1_loss = 0.0
-        running_perceptual_loss = 0.0    
+        running_perceptual_loss = 0.0  
+        cur_step = 0
+  
         for input_batch, target_batch in dataloader:
             
             input_batch = input_batch.to(device="cuda", dtype=torch.float16) 
