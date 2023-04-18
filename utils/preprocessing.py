@@ -4,7 +4,7 @@ import torch
 import torchvision.transforms as T
 from PIL import Image
 from tqdm import tqdm
-from transformers import AutoencoderKL
+from diffusers import AutoencoderKL
 
 
 def generate_latents(input_root_path='roto', output_path='roto_latent', resolution=512, remove_if_exist=False):
