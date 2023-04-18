@@ -9,6 +9,7 @@ import os
 import multiprocessing as mp
 from multiprocessing import Pool, cpu_count
 import argparse
+import shutil
 
 def atoi(text):
     """Convert a string to integer if possible."""
@@ -29,7 +30,8 @@ def generate_dataset(num_samples,
                      parallelize=False, 
                      rotate=False, 
                      translate=False,
-                     resolution=512):
+                     resolution=512,
+                     remove_if_exist=False):
     """
     Generates a dataset of num_samples samples by selecting images from input_path/train_A and input_path/train_B, and
     saving them to output_path/train_A and output_path/train_B respectively.
@@ -42,6 +44,8 @@ def generate_dataset(num_samples,
         rotate (bool): Whether to rotate images.
         translate (bool): Whether to translate images.
         resolution (int): The resolution of the output images.
+        remove_folder_if_exists (bool): Whether to remove the output folder if it already exists.
+
 
     Returns:
         None
@@ -52,10 +56,14 @@ def generate_dataset(num_samples,
     output_input_path = os.path.join(output_path, "train_A")
     output_style_path = os.path.join(output_path, "train_B")
 
-    # Check if the output directory already exists
+    # Check if output folder already exists
     if os.path.exists(output_path):
-        print(f"{output_path} already exists. Exiting.")
-        return
+        if remove_if_exist:
+            print(f'Removing existing output folder {output_path}')
+            shutil.rmtree(output_path)
+        else:
+            raise ValueError(f'Output folder {output_path} already exists')
+
 
     # Create output directories
     print(f"Creating directories in {output_path}")
