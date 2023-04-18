@@ -122,7 +122,7 @@ def train_unet(
         # Loss for TensorBoard 
         args.writer.add_scalar(f'loss/loss', epoch_loss, epoch)
         args.writer.add_scalar(f'loss/mse', lambda_mse*epoch_mse_loss, epoch)
-        args.writer.add_scalar(f'loss/f1', lambda_l1*epoch_l1_loss, epoch)
+        args.writer.add_scalar(f'loss/l1', lambda_l1*epoch_l1_loss, epoch)
         args.writer.add_scalar(f'loss/perceptual', lambda_perceptual*epoch_perceptual_loss, epoch)
 
         # Save checkpoint
