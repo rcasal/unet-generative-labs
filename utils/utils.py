@@ -273,7 +273,7 @@ def generate_canny_edges(input_path='roto/train_A/', output_path='roto/canny_edg
         blur = cv2.GaussianBlur(gray, (5,5), 0)
 
         # Apply Canny edge detection algorithm
-        edges = cv2.Canny(blur, 50, 150)
+        edges = cv2.Canny(blur, 40, 80)
         
         # Save the image
         img_name = os.path.join(output_path,filename)
