@@ -22,7 +22,7 @@ def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, canny_edges
     """
     dataset = CustomDataset(root_dir, is_latent=is_latent, midas=midas, canny_edges=canny_edges)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0, shuffle=shuffle)
-    i, _ = dataset[1]
+    i, _, _ = dataset[1]
     ch_in = i.shape[0]
     len_ds = len(dataset)
     return dataloader, ch_in, len_ds
