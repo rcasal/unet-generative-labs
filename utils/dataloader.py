@@ -31,7 +31,7 @@ def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, shuffle=Tru
 class CustomDataset(Dataset):
     """Custom dataset class for loading image data"""
 
-    def __init__(self, root_dir='roto_latent', is_latent=False, midas=False):
+    def __init__(self, root_dir='roto_latent', is_latent=False, midas=False, canny_edges=False):
         """
         Args:
             root_dir (str): Root directory of the dataset.
@@ -43,6 +43,7 @@ class CustomDataset(Dataset):
         self.image_paths = sorted(os.listdir(os.path.join(self.root_dir, "train_A")))
         self.is_latent = is_latent
         self.midas = midas
+        self.canny_edges = canny_edges
 
     def __len__(self):
         """Return the length of the dataset"""
@@ -60,8 +61,14 @@ class CustomDataset(Dataset):
 
             if self.midas:
                 # Concatenate the latent space data with the corresponding Midas data
-                midas = torch.load(os.path.join(self.root_dir, "midas_A", image_path)).squeeze()
+                midas = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze()
                 input = torch.cat([input, midas], dim=0)
+
+            if self.canny_edges:
+                # Concatenate the latent space data with the corresponding canny_edges data
+                canny_edges = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze()
+                input = torch.cat([input, canny_edges], dim=0)
+
         else:
             # Load the images and preprocess them
             input = Image.open(os.path.join(self.root_dir, "train_A", image_path))

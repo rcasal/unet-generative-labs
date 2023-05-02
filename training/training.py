@@ -23,6 +23,7 @@ def train_unet(
         lambda_l1=0.01,
         is_latent=True,
         midas=True, 
+        canny_edges=True, 
         lr=1e-3,
         ):
 
@@ -31,7 +32,7 @@ def train_unet(
     args.saved_model_path = os.path.join(args.output_path_dir, args.saved_model_path)
 
     # dataloader
-    dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, shuffle=True)
+    dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, canny_edges=canny_edges, shuffle=True)
 
     # models
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)

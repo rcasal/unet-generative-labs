@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--lambda_l1', type=float, default=0.01, help='Coefficient for MSE loss')
     parser.add_argument('--is_latent', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate latents as input of the UNet.")
     parser.add_argument('--midas', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate the use of midas as input of the UNet.")
+    parser.add_argument('--canny_edges', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate the use of canny edges as input of the UNet.")
     parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
 
     # Experiment parameters
@@ -67,6 +68,7 @@ def main():
         lambda_l1=args.lambda_l1,
         is_latent=args.is_latent,
         midas=args.midas, 
+        canny_edges=args.canny_edges, 
         lr = args.lr
         )
 
