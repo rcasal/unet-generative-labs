@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument('--output_path', type=str, default="roto_latent", help='The path to the output folder to save the generated samples to')
     parser.add_argument('--resolution', type=int, default=512, help='The number of cpu to use to parallelize the processing')
     parser.add_argument('--midas', type=str2bool, nargs='?', const=True, default=False, help="process the midas_A images from input_root_path to get the embeddings.")
+    parser.add_argument('--canny_edges', type=str2bool, nargs='?', const=True, default=False, help="process the canny_edges_A images from input_root_path to get the embeddings.")
     parser.add_argument('--remove_if_exist', type=str2bool, nargs='?', const=True, default=False, help="Parallelize the job across all the available cpus.")
 
     return parser.parse_args()
@@ -24,6 +25,7 @@ def main():
         output_path=args.output_path, 
         resolution=args.resolution, 
         midas=args.midas,
+        canny_edges=args.canny_edges,
         remove_if_exist=args.remove_if_exist
         )
 

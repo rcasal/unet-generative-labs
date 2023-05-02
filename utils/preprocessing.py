@@ -10,7 +10,7 @@ import torch
 from tqdm import tqdm
 import os
 
-def generate_latents(input_root_path='roto', output_path='roto_latent', resolution=512, midas=False, remove_if_exist=False):
+def generate_latents(input_root_path='roto', output_path='roto_latent', resolution=512, midas=False, canny_edges=False, remove_if_exist=False):
     """
     Generate latent codes for images using a VAE model and save them as PyTorch tensors.
 
@@ -19,6 +19,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
         output_path (str): directory to save the generated latent codes in two subdirectories 'train_A' and 'train_B'
         resolution (int): size of the images after resizing
         midas (bool): if True, process the midas_A images from input_root_path to get the embeddings.
+        canny_edges (bool): if True, process the canny_edges_A images from input_root_path to get the embeddings.
         remove_if_exist (bool): if True, remove the output directory if it already exists, otherwise raise an error
 
     Returns:
@@ -28,9 +29,11 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
     # Define input and output paths
     input_path = os.path.join(input_root_path, "train_A")
     midas_path = os.path.join(input_root_path, "midas_A")
+    canny_edges_path = os.path.join(input_root_path, "midas_A")
     style_path = os.path.join(input_root_path, "train_B")
     output_A_path = os.path.join(output_path, "train_A")
     output_midas_path = os.path.join(output_path, "midas_A") if midas else None
+    output_canny_edges_path = os.path.join(output_path, "midas_A") if canny_edges else None
     output_B_path = os.path.join(output_path, "train_B")
 
     # Define the encoder model
@@ -50,6 +53,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
     os.makedirs(output_A_path)
     os.makedirs(output_B_path)
     os.makedirs(output_midas_path) if midas else None
+    os.makedirs(output_canny_edges_path) if canny_edges else None
     
     # Loop through the images in train_A
     print(f'Generating A samples...')
@@ -87,7 +91,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
         for filename in tqdm(os.listdir(midas_path)):
             # Load the image
             img = Image.open(os.path.join(midas_path, filename)).convert('RGB')
-            img = T.Resize((512, 512))(img)
+            img = T.Resize((resolution, resolution))(img)
             img = T.ToTensor()(img) * 2.0 - 1.0
             img = img.unsqueeze(0)
             img = img.to('cuda').half()
@@ -96,6 +100,22 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
                 latents = vae.encode(img).latent_dist.sample() * 0.18215
             # Save the encoded image as a PyTorch tensor
             torch.save(latents, os.path.join(output_midas_path, filename[:-4] + '.pt'))
+
+    if canny_edges:
+        # Loop through the images in canny_edges
+        print(f'Generating midas samples...')
+        for filename in tqdm(os.listdir(canny_edges_path)):
+            # Load the image
+            img = Image.open(os.path.join(midas_path, filename)).convert('RGB')
+            img = T.Resize((resolution, resolution))(img)
+            img = T.ToTensor()(img) * 2.0 - 1.0
+            img = img.unsqueeze(0)
+            img = img.to('cuda').half()
+            # Pass the image through the encoder
+            with torch.no_grad():
+                latents = vae.encode(img).latent_dist.sample() * 0.18215
+            # Save the encoded image as a PyTorch tensor
+            torch.save(latents, os.path.join(output_canny_edges_path, filename[:-4] + '.pt'))
     
 
 
