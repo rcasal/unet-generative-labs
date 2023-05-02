@@ -108,12 +108,14 @@ def generate_dataset(num_samples,
     print(f'{num_samples} samples generated')
     
     # midas code
-    print(f'Generating midas samples')
-    generate_midas(input_path=output_input_path, output_path=output_midas_path)
+    if midas:
+        print(f'Generating midas samples')
+        generate_midas(input_path=output_input_path, output_path=output_midas_path)
 
     # canny edges code
-    print(f'Generating canny edges samples')
-    generate_canny_edges(input_path=output_input_path, output_path=output_canny_edges_path)
+    if canny_edges:
+        print(f'Generating canny edges samples')
+        generate_canny_edges(input_path=output_input_path, output_path=output_canny_edges_path)
 
 
 def generate_sample(args):
