@@ -71,6 +71,6 @@ class CustomDataset(Dataset):
             input = T.ToTensor()(input)* 2.0 - 1.0
             target = T.ToTensor()(target)* 2.0 - 1.0
 
-        return input, target
+        return input, target, image_path
 
 
