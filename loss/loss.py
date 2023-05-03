@@ -32,7 +32,8 @@ class UNetLoss(nn.Module):
             '3': 'relu1_2',
             '8': 'relu2_2',
             '17': 'relu3_3',
-            '26': 'relu4_3'
+            '26': 'relu4_3',
+            '35': 'relu5_3'
         }
         for param in self.vgg.parameters():
             param.requires_grad = False
