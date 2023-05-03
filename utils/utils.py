@@ -145,7 +145,6 @@ def transform(files, rotate=False, translate=False, resolution=512):
         tuple: Two transformed images as NumPy arrays.
     """
     # Select a random pair of image files
-    print(f'len {len(files)}')
     idx = np.random.randint(len(files))
 
     # Load the images using PIL and convert to RGB
