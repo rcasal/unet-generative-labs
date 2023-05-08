@@ -107,7 +107,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
         print(f'Generating canny_edges samples...')
         for filename in tqdm(os.listdir(canny_edges_path)):
             # Load the image
-            img = Image.open(os.path.join(canny_edges_path, filename)).convert('RGB')
+            img = Image.open(os.path.join(canny_edges_path, filename))#.convert('RGB')
             img = T.Resize((latent_dim, latent_dim))(img)
             img = T.ToTensor()(img) * 2.0 - 1.0
             img = img.unsqueeze(0)
