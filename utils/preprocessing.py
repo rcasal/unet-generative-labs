@@ -115,6 +115,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
             # Pass the image through the encoder
             #with torch.no_grad():
             #    latents = vae.encode(img).latent_dist.sample() * 0.18215
+            latents = img
             # Save the encoded image as a PyTorch tensor
             torch.save(latents, os.path.join(output_canny_edges_path, filename[:-4] + '.pt'))
     
