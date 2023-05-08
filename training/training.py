@@ -84,6 +84,8 @@ def train_unet(
             input_batch = input_batch.to(device="cuda", dtype=torch.float16) 
             target_batch = target_batch.to(device="cuda", dtype=torch.float16) 
             
+            #print
+            print(input_batch.shape)
             # Unet
             output_batch=unet(input_batch)
             
