@@ -113,7 +113,7 @@ def train_unet(
             # Print after debug steps
             if debug_verbose:
                 if cur_step % 20 == 0 and cur_step > 0:
-                    print_image(latent_output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
+                    print_image(latent_output_batch, output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
                     print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), l1_loss.item()))
 
 
@@ -124,7 +124,7 @@ def train_unet(
         epoch_perceptual_loss = running_perceptual_loss / len_ds
         # time_elapsed = time.time() - since
         # print('Epoch [{}/{}], Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}, Time Elapsed: {:.1f} s'.format(epoch+1, num_epochs, epoch_loss, epoch_mse_loss, epoch_l1_loss, epoch_perceptual_loss, time_elapsed))
-        print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
+        print_image(latent_output_batch, output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
 
         # Loss for TensorBoard 
         args.writer.add_scalar(f'loss/loss', epoch_loss, epoch)
