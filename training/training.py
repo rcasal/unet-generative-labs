@@ -86,7 +86,9 @@ def train_unet(
             
             input_batch = input_batch.to(device="cuda", dtype=torch.float16) 
             target_batch = target_batch.to(device="cuda", dtype=torch.float16) 
-            target_batch = vae.decode(target_batch).sample
+            with torch.no_grad():
+                target_batch = vae.decode(target_batch).sample
+            
             # Unet
             latent_output_batch=unet(input_batch)
             print('before decoder' + str(latent_output_batch.shape))
