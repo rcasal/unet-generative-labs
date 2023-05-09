@@ -95,7 +95,7 @@ def train_unet(
             print('after decoder' + str(output_batch.shape))
             
             # Compute the loss
-            loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, target_batch)
+            loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, vae.decode(target_batch).sample)
             
             # Backward pass and optimization
             optimizer.zero_grad()
