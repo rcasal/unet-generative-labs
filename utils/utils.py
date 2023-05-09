@@ -316,7 +316,7 @@ def weights_init(m):
         nn.init.xavier_normal_(m.weight)
 
 #print_image(latent_output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
-def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path):
+def print_image(latent_output_batch, output_batch, target_batch, input_batch, vae, loss, epoch, path):
     """
     Displays a comparison of input, output, and target images from a VAE, along with their decoded versions.
     
@@ -333,14 +333,12 @@ def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path)
     
     # Rescale input, output, and target images
     input_batch = (1 / 0.18215) * input_batch
-    output_batch = (1 / 0.18215) * output_batch
-    target_batch = (1 / 0.18215) * target_batch
+    latent_output_batch = (1 / 0.18215) * latent_output_batch
     
     with torch.no_grad():
         # Decode input, output, and target images
         decoded_input_batch = vae.decode(input_batch[0].unsqueeze(0)).sample
-        decoded_batch = vae.decode(output_batch[0].unsqueeze(0)).sample
-        decoded_target = vae.decode(target_batch[0].unsqueeze(0)).sample
+        latent_output_batch = vae.decode(latent_output_batch[0].unsqueeze(0)).sample
 
     # Convert output and target images to PIL images
     output_pil = convert_pytorch_to_pil(output_batch[0])
@@ -348,21 +346,18 @@ def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path)
 
     # Convert decoded input, output, and target images to PIL images
     dinput_pil = convert_pytorch_to_pil(decoded_input_batch[0])
-    doutput_pil = convert_pytorch_to_pil(decoded_batch[0])
-    dtarget_pil = convert_pytorch_to_pil(decoded_target[0])
+    dlatoutput_pil = convert_pytorch_to_pil(latent_output_batch[0])
 
     # Plot all images
-    fig, axs = plt.subplots(1, 5, figsize=(10, 3))
+    fig, axs = plt.subplots(1, 4, figsize=(10, 3))
     axs[0].imshow(dinput_pil)
-    axs[1].imshow(output_pil)
-    axs[2].imshow(target_pil)
-    axs[3].imshow(doutput_pil)
-    axs[4].imshow(dtarget_pil)
+    axs[1].imshow(dlatoutput_pil)
+    axs[2].imshow(output_pil)
+    axs[3].imshow(target_pil)
     
     # Add axis titles and remove ticks
     axs[0].set_title('Decoded input')
-    axs[1].set_title('Output')
-    axs[2].set_title('Target')
+    axs[1].set_title('Latent Output')
     axs[3].set_title('Decoded output')
     axs[4].set_title('Decoded target')
     
