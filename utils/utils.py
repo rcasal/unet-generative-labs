@@ -315,7 +315,7 @@ def weights_init(m):
     if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
         nn.init.xavier_normal_(m.weight)
 
-
+#print_image(latent_output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
 def print_image(output_batch, target_batch, input_batch, vae, loss, epoch, path):
     """
     Displays a comparison of input, output, and target images from a VAE, along with their decoded versions.
