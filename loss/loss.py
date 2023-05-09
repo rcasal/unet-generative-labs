@@ -56,7 +56,7 @@ class UNetLoss(nn.Module):
         mse_loss = F.mse_loss(y_pred, y_true)
 
         # Compute perceptual loss
-        x_vgg, y_vgg = self.get_vgg_features(y_pred[:, 0:3, :, :]), self.get_vgg_features(y_true[:, 0:3, :, :])
+        x_vgg, y_vgg = self.get_vgg_features(y_pred), self.get_vgg_features(y_true)
         perceptual_loss = 0
         for layer in self.layers:
             perceptual_loss += F.mse_loss(x_vgg[self.layers[layer]], y_vgg[self.layers[layer]])

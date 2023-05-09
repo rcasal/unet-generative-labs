@@ -37,6 +37,10 @@ def train_unet(
     # models
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)
     vae = vae.to('cuda')
+    # Freeze decoder weights
+    for param in [vae.encoder.parameters(), vae.decoder.parameters()]:
+        param.requires_grad = False   
+
     unet = UNet(c_in=ch_in, c_out=4,remove_deep_conv=remove_deep_conv).half().apply(weights_init)
     unet = unet.to('cuda')
 
@@ -85,7 +89,11 @@ def train_unet(
             target_batch = target_batch.to(device="cuda", dtype=torch.float16) 
             
             # Unet
-            output_batch=unet(input_batch)
+            latent_output_batch=unet(input_batch)
+            print('before decoder' + latent_output_batch.shape)
+            # Decoder
+            output_batch = vae.decode(latent_output_batch).sample
+            print('after decoder' + output_batch.shape)
             
             # Compute the loss
             loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, target_batch)
@@ -107,7 +115,7 @@ def train_unet(
             # Print after debug steps
             if debug_verbose:
                 if cur_step % 20 == 0 and cur_step > 0:
-                    print_image(output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
+                    print_image(latent_output_batch, target_batch, input_batch[:, 0:4, :, :], vae, loss, epoch+epoch_run, args.saved_images_path)
                     print('Loss: {:.4f}, MSE Loss: {:.4f}, L1 Loss: {:.4f}, Perc Loss: {:.4f}'.format(loss.item(), mse_loss.item(), perceptual_loss.item(), l1_loss.item()))
 
 
