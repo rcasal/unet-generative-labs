@@ -67,7 +67,7 @@ class CustomDataset(Dataset):
 
             if self.canny_edges:
                 # Concatenate the latent space data with the corresponding canny_edges data
-                canny_edges = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze()
+                canny_edges = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze(0)
                 input = torch.cat([input, canny_edges], dim=0)
 
         else:
