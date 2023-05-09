@@ -36,7 +36,7 @@ def train_unet(
 
     # models
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)
-    vae = vae.to('cuda')
+    vae = vae.to('cuda').half()
     # Freeze decoder weights
     vae = vae.eval()
 
