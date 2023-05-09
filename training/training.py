@@ -38,8 +38,7 @@ def train_unet(
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)
     vae = vae.to('cuda')
     # Freeze decoder weights
-    for param in [vae.encoder.parameters(), vae.decoder.parameters()]:
-        param.requires_grad = False   
+    vae = vae.eval()
 
     unet = UNet(c_in=ch_in, c_out=4,remove_deep_conv=remove_deep_conv).half().apply(weights_init)
     unet = unet.to('cuda')
