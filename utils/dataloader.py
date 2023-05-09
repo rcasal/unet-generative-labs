@@ -57,7 +57,7 @@ class CustomDataset(Dataset):
         
         # Load the latent space data
         input = torch.load(os.path.join(self.root_dir, "train_A", image_path)).squeeze()
-        target = Image.open(os.path.join(self.target_dir, "train_B", image_path))
+        target = Image.open(os.path.join(self.target_dir, "train_B", image_path.replace(".pt", ".jpg")))
         target = Resize((512, 512))(target)
         target = T.ToTensor()(target)* 2.0 - 1.0
 
