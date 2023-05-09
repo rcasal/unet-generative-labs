@@ -32,7 +32,7 @@ def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, canny_edges
 class CustomDataset(Dataset):
     """Custom dataset class for loading image data"""
 
-    def __init__(self, root_dir='roto_latent', is_latent=False, midas=False, canny_edges=False):
+    def __init__(self, root_dir='roto_latent', target_dir='roto/train_B', midas=False, canny_edges=False):
         """
         Args:
             root_dir (str): Root directory of the dataset.
@@ -41,8 +41,8 @@ class CustomDataset(Dataset):
                           with the corresponding Midas data.
         """
         self.root_dir = root_dir
+        self.target_dir = target_dir
         self.image_paths = sorted(os.listdir(os.path.join(self.root_dir, "train_A")))
-        self.is_latent = is_latent
         self.midas = midas
         self.canny_edges = canny_edges
 
@@ -55,29 +55,21 @@ class CustomDataset(Dataset):
 
         image_path = self.image_paths[idx]
         
-        if self.is_latent:
-            # Load the latent space data
-            input = torch.load(os.path.join(self.root_dir, "train_A", image_path)).squeeze()
-            target = torch.load(os.path.join(self.root_dir, "train_B", image_path)).squeeze()
+        # Load the latent space data
+        input = torch.load(os.path.join(self.root_dir, "train_A", image_path)).squeeze()
+        target = Image.open(os.path.join(self.target_dir, "train_B", image_path))
+        target = Resize((512, 512))(target)
+        target = T.ToTensor()(target)* 2.0 - 1.0
 
-            if self.midas:
-                # Concatenate the latent space data with the corresponding Midas data
-                midas = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze()
-                input = torch.cat([input, midas], dim=0)
+        if self.midas:
+            # Concatenate the latent space data with the corresponding Midas data
+            midas = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze()
+            input = torch.cat([input, midas], dim=0)
 
-            if self.canny_edges:
-                # Concatenate the latent space data with the corresponding canny_edges data
-                canny_edges = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze(0)
-                input = torch.cat([input, canny_edges], dim=0)
-
-        else:
-            # Load the images and preprocess them
-            input = Image.open(os.path.join(self.root_dir, "train_A", image_path))
-            target = Image.open(os.path.join(self.root_dir, "train_B", image_path))
-            input = Resize((512, 512))(input)
-            target = Resize((512, 512))(target)
-            input = T.ToTensor()(input)* 2.0 - 1.0
-            target = T.ToTensor()(target)* 2.0 - 1.0
+        if self.canny_edges:
+            # Concatenate the latent space data with the corresponding canny_edges data
+            canny_edges = torch.load(os.path.join(self.root_dir, "canny_edges_A", image_path)).squeeze(0)
+            input = torch.cat([input, canny_edges], dim=0)
 
         return input, target, image_path
 

@@ -93,9 +93,8 @@ def train_unet(
             latent_output_batch=unet(input_batch)
             print('before decoder' + str(latent_output_batch.shape))
             # Decoder
-            with torch.no_grad():
-                output_batch = vae.decode(latent_output_batch).sample
-                print('after decoder' + str(output_batch.shape))
+            output_batch = vae.decode(latent_output_batch).sample
+            print('after decoder' + str(output_batch.shape))
             
             # Compute the loss
             loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, target_batch)
