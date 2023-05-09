@@ -14,6 +14,7 @@ from tqdm.auto  import tqdm
 def train_unet(
         args,
         root_dir = 'roto_latent', 
+        target_dir = 'roto', 
         num_epochs = 1000,
         batch_size = 4,
         debug_verbose = False,
@@ -21,7 +22,6 @@ def train_unet(
         lambda_mse=1.0,
         lambda_perceptual=0.5, 
         lambda_l1=0.01,
-        is_latent=True,
         midas=True, 
         canny_edges=True, 
         lr=1e-3,
@@ -32,7 +32,7 @@ def train_unet(
     args.saved_model_path = os.path.join(args.output_path_dir, args.saved_model_path)
 
     # dataloader
-    dataloader, ch_in, len_ds = get_dataloader(root_dir, batch_size, is_latent=is_latent, midas=midas, canny_edges=canny_edges, shuffle=True)
+    dataloader, ch_in, len_ds = get_dataloader(root_dir, target_dir, batch_size, midas=midas, canny_edges=canny_edges, shuffle=True)
 
     # models
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)

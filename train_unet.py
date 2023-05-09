@@ -13,13 +13,13 @@ def parse_args():
     # Dataset parameters and input paths
     parser.add_argument('--num_epochs', type=int, default=1000, help='The number of epochs to train.')
     parser.add_argument('--root_dir', type=str, default='roto_latent', help='The path to the input folder containing train_A, midas_A and train_B subfolders.')
+    parser.add_argument('--target_dir', type=str, default='roto', help='The path to the input folder containing train_A, midas_A and train_B subfolders.')
     parser.add_argument('--batch_size', type=int, default=4, help='The batch size to train')
     parser.add_argument('--debug_verbose', type=str2bool, nargs='?', const=True, default=False, help="Flag to show intermediate output. Use for debugging reasons.")
     parser.add_argument('--remove_deep_conv', type=str2bool, nargs='?', const=True, default=False, help="Add a deep convolutional layer in the UNet's bottleneck.")
     parser.add_argument('--lambda_mse', type=float, default=1.0, help='Coefficient for MSE loss')
     parser.add_argument('--lambda_perceptual', type=float, default=0.5, help='Coefficient for MSE loss')
     parser.add_argument('--lambda_l1', type=float, default=0.01, help='Coefficient for MSE loss')
-    parser.add_argument('--is_latent', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate latents as input of the UNet.")
     parser.add_argument('--midas', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate the use of midas as input of the UNet.")
     parser.add_argument('--canny_edges', type=str2bool, nargs='?', const=True, default=False, help="Flag to indicate the use of canny edges as input of the UNet.")
     parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
@@ -59,6 +59,7 @@ def main():
     train_unet(
         args = args,
         root_dir = args.root_dir, 
+        target_dir = args.target_dir,
         num_epochs = args.num_epochs,
         batch_size = args.batch_size,
         debug_verbose = args.debug_verbose,
@@ -66,7 +67,6 @@ def main():
         lambda_mse=args.lambda_mse,
         lambda_perceptual=args.lambda_perceptual, 
         lambda_l1=args.lambda_l1,
-        is_latent=args.is_latent,
         midas=args.midas, 
         canny_edges=args.canny_edges, 
         lr = args.lr

@@ -5,7 +5,7 @@ import torchvision.transforms as T
 from PIL import Image
 import os
 
-def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, canny_edges=True, shuffle=True):
+def get_dataloader(root_dir, target_dir, batch_size, is_latent=True, midas=True, canny_edges=True, shuffle=True):
     """
     Returns a dataloader and the number of input channels for the given root directory.
 
@@ -20,7 +20,7 @@ def get_dataloader(root_dir, batch_size, is_latent=True, midas=True, canny_edges
     Returns:
         A tuple containing the dataloader and the number of input channels and the len of the dataset.
     """
-    dataset = CustomDataset(root_dir, is_latent=is_latent, midas=midas, canny_edges=canny_edges)
+    dataset = CustomDataset(root_dir, target_dir, midas=midas, canny_edges=canny_edges)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=0, shuffle=shuffle)
     i, _, _ = dataset[1]
     ch_in = i.shape[0]
