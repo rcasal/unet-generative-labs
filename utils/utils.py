@@ -358,8 +358,8 @@ def print_image(latent_output_batch, output_batch, target_batch, input_batch, va
     # Add axis titles and remove ticks
     axs[0].set_title('Decoded input')
     axs[1].set_title('Latent Output')
-    axs[3].set_title('Decoded output')
-    axs[4].set_title('Decoded target')
+    axs[2].set_title('Decoded output')
+    axs[3].set_title('Decoded target')
     
     for ax in axs:
         ax.set_xticks([])
