@@ -27,7 +27,7 @@ class UNetLoss(nn.Module):
         self.lambda_perceptual = lambda_perceptual
         self.lambda_l1 = lambda_l1
         self.device = device
-        self.vgg = models.vgg19(pretrained=True).features.to(device)
+        self.vgg = models.vgg19(pretrained=True).features.to(device).half()
         self.layers = {
             '3': 'relu1_2',
             '8': 'relu2_2',
