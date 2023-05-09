@@ -68,6 +68,7 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
         with torch.no_grad():
             latents = vae.encode(img).latent_dist.sample() * 0.18215
         # Save the encoded image as a PyTorch tensor
+        latent_dim = latents.shape[2]
         torch.save(latents, os.path.join(output_A_path, filename[:-4] + '.pt'))
 
     # Loop through the images in train_B
@@ -106,14 +107,15 @@ def generate_latents(input_root_path='roto', output_path='roto_latent', resoluti
         print(f'Generating canny_edges samples...')
         for filename in tqdm(os.listdir(canny_edges_path)):
             # Load the image
-            img = Image.open(os.path.join(canny_edges_path, filename)).convert('RGB')
-            img = T.Resize((resolution, resolution))(img)
+            img = Image.open(os.path.join(canny_edges_path, filename))#.convert('RGB')
+            img = T.Resize((latent_dim, latent_dim))(img)
             img = T.ToTensor()(img) * 2.0 - 1.0
             img = img.unsqueeze(0)
             img = img.to('cuda').half()
             # Pass the image through the encoder
-            with torch.no_grad():
-                latents = vae.encode(img).latent_dist.sample() * 0.18215
+            #with torch.no_grad():
+            #    latents = vae.encode(img).latent_dist.sample() * 0.18215
+            latents = img
             # Save the encoded image as a PyTorch tensor
             torch.save(latents, os.path.join(output_canny_edges_path, filename[:-4] + '.pt'))
     
