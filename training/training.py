@@ -86,7 +86,7 @@ def train_unet(
             
             input_batch = input_batch.to(device="cuda", dtype=torch.float16) 
             target_batch = target_batch.to(device="cuda", dtype=torch.float16) 
-            
+            target_batch = vae.decode(target_batch).sample
             # Unet
             latent_output_batch=unet(input_batch)
             print('before decoder' + str(latent_output_batch.shape))
@@ -95,7 +95,7 @@ def train_unet(
             print('after decoder' + str(output_batch.shape))
             
             # Compute the loss
-            loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, vae.decode(target_batch).sample)
+            loss, mse_loss, perceptual_loss, l1_loss = loss_fn(output_batch, target_batch)
             
             # Backward pass and optimization
             optimizer.zero_grad()
